@@ -103,9 +103,7 @@
 <body>
     <div class="speaker">
         <p id="action1" style="color: grey; font-weight: 800; padding: 0; padding-left: 2rem;"></p>
-        <button onclick="runSpeechRecog()" style="border: transparent; padding: 0 0.5rem;">
-            စကားပြေ
-        </button>
+        <button onclick="runSpeechRecog()" style="border: transparent; padding: 0 0.5rem;">စကားပြော</button>
     </div>
 
     <h3 id="output" class="hide"></h3>
@@ -131,32 +129,43 @@
             document.getElementById("output").innerHTML = "Loading text...";
             var output = document.getElementById('output');
             var action = document.getElementById('action1');
-            var recognition = new webkitSpeechRecognition(); // Create SpeechRecognition object
+            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-            recognition.lang = 'my'; // Set the language to Burmese
-            recognition.continuous = true; // Enable continuous speech recognition
+            if (!SpeechRecognition) {
+                output.innerHTML = "Speech recognition is not supported in this browser.";
+                return;
+            }
 
+            let recognition = new SpeechRecognition();
             recognition.onstart = function () {
                 action.innerHTML = "Listening...";
             };
-
-            recognition.onresult = function (event) {
-                var transcript = event.results[0][0].transcript;
+            recognition.onresult = function (e) {
+                var transcript = e.results[0][0].transcript;
                 output.innerHTML = transcript;
                 output.classList.remove("hide");
                 action.innerHTML = "";
             };
-
-            recognition.start(); // Start speech recognition
+            recognition.start();
         }
 
         function speakText() {
             var textArea = document.getElementById('text');
             var text = textArea.value;
-            var speech = new SpeechSynthesisUtterance();
 
+            var speech = new SpeechSynthesisUtterance();
             speech.text = text;
-            speech.lang = 'my'; // Set the language to Burmese
+
+            // Get available voices
+            var voices = speechSynthesis.getVoices();
+
+            // Find Burmese voice
+            var burmeseVoice = voices.find(function (voice) {
+                return voice.lang === 'my';
+            });
+
+            // Set the Burmese voice if found, otherwise use default voice
+            speech.voice = burmeseVoice || speechSynthesis.getVoices()[0];
 
             // Add event listeners to track the progress of speech synthesis
             speech.addEventListener('start', function () {
@@ -169,7 +178,7 @@
                 textArea.classList.remove('scrolling'); // Remove scrolling effect
             });
 
-            speechSynthesis.speak(speech); // Start speech synthesis
+            window.speechSynthesis.speak(speech);
         }
 
         function autoScroll() {
