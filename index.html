@@ -172,6 +172,7 @@
 
             var speech = new SpeechSynthesisUtterance();
             speech.text = text;
+            speech.lang = 'my-MM'; // Set the language to Burmese
 
             // Add event listeners to track the progress of speech synthesis
             speech.addEventListener('start', function() {
